@@ -1,4 +1,4 @@
-Parsible
-========
+Parseli
+=======
 
-A collection of libraries for 
+A suite of modules for parsing linkedin public pages into clean json

@@ -3,32 +3,32 @@
 """
     parseli
     ~~~~~~~
+    Dependencies
 
     Setup
     `````
-
-    $ TODO
+    $ sudo pip install -e .
+    $ sudo rm -rf build
 """
 
 from distutils.core import setup
 
 setup(
     name='parseli',
-    version='0.1.2',
+    version='0.0.1',
     url='',
     author='mek',
-    author_email='mek@ark.com',
+    author_email='michael.karpeles@gmail.com',
     packages=[
         'parseli',
-        'parseli.test'
+        'test'
         ],
     platforms='any',
     scripts=[],
     license='LICENSE',
     install_requires=[
-        'BeautifulSoup >= 3.2.0',
-        'nose >= 1.1.2'
+        'beautifulsoup',
     ],
-    description="Crawls LinkedIn urls and returns json.",
+    description="Parseli cooks public LinkedIn profile pages into json.",
     long_description=open('README.md').read(),
 )
