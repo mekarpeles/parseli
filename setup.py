@@ -15,7 +15,7 @@ from distutils.core import setup
 
 setup(
     name='parseli',
-    version='0.0.1',
+    version='0.0.2',
     url='',
     author='mek',
     author_email='michael.karpeles@gmail.com',
@@ -24,7 +24,7 @@ setup(
         'test'
         ],
     platforms='any',
-    scripts=[],
+    scripts=['scripts/parseli.py'],
     license='LICENSE',
     install_requires=[
         'beautifulsoup',
