@@ -1,0 +1,21 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+
+import argparse
+import os
+import json
+
+from parseli.parseli import getli
+
+parser = argparse.ArgumentParser(description="Parseli cooks a LinkedIn Profile into JSON")
+parser.add_argument('url', nargs='?', metavar='<profile url>',
+                    help="url of user's linkedin profile (e.g. http://linkedin.com/in/mekarpeles)")
+args = parser.parse_args()
+if not args.url:
+    raise ValueError('No input detected, please enter a valid url.')
+if 'http://' not in args.url:
+    args.url = 'http://%s' % args.url
+try:
+    print getli(args.url, raw=True)
+except Exception as e:
+    print "Something went wrong, please make sure the url you entered is valid, like: http://linkedin.com/in/mekarpeles. Traceback: %s" % e

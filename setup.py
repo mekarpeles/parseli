@@ -24,7 +24,7 @@ setup(
         'test'
         ],
     platforms='any',
-    scripts=['scripts/parseli.py'],
+    scripts=['scripts/parseli'],
     license='LICENSE',
     install_requires=[
         'beautifulsoup',
