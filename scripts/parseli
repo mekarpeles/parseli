@@ -13,7 +13,7 @@ parser.add_argument('url', nargs='?', metavar='<profile url>',
 args = parser.parse_args()
 if not args.url:
     raise ValueError('No input detected, please enter a valid url.')
-if 'http://' not in args.url:
+if 'http://' not in args.url and 'https://' not in args.url:
     args.url = 'http://%s' % args.url
 try:
     print getli(args.url, raw=True)
