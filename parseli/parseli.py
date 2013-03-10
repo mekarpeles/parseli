@@ -53,6 +53,7 @@ def parseli(soup, raw=False):
     """
     profile = Storage({            
             "id": '',
+            "avatar": '',
             "url": '',
             "name": {},
             "location": {},
@@ -109,6 +110,9 @@ def parseli(soup, raw=False):
         if header_sec:
             header_sec = header_sec[0]
             
+            avatar = header_sec.findAll('div', {'id': 'profile-picture'})
+            if avatar:
+                profile.avatar = avatar[0].findAll('img')[0]['src']
             demographic = soup.findAll('dl', {"class": 'demographic-info adr'})
             name = header_sec.findAll('span', {"class": "full-name"})            
             headline = header_sec.findAll("p", {"class": "headline-title title"})
