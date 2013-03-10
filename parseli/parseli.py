@@ -28,19 +28,24 @@ PROFILE_URL = "http://linkedin.com/profile?id={}"
 def getli(url, raw=False):
     """Get LinkedIn: json results for any linkedin url
     
-    XXX Consider renaming raw to 'dumps'
-
     params:
-        raw - False if dict, True if raw str dump / txt
+        raw - False if desired output is a python dict,
+              True if raw json dump
     """
+    # allow search by li username
+    if '/' not in url:
+        username = url
+        url = 'http://linkedin.com/in/%s' % username
+
     soup = crawli(url)
     parsely = parseli(soup, raw=raw)
     return parsely
 
-def crawli(url):
+def crawli(url, user_agent=('User-agent', 'Mozilla 3.10')):
     """Crawl LinkedIn: Returns html soup for any linkedin url"""
+    url = url.replace('https://', 'http://')
     req = urllib2.Request(url)
-    req.add_header('User-agent', 'Mozilla 3.10')
+    req.add_header(*user_agent)
     html = urllib2.urlopen(req).read()
     soup = BeautifulSoup(html)
     return soup    
