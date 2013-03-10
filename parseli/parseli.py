@@ -262,7 +262,7 @@ def parseli(soup, raw=False):
         """Returns a list of similar profile urls, if they exist"""
         try:
             ppl = soup.findAll('div', {'id': 'extra'})[0].findAll('a')
-            profile['similar'] = [a['href'] for a in ppl]
+            profile['similar'] = list(set([a['href'] for a in ppl]))
         except:
             pass
         return profile
