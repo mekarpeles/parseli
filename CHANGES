@@ -1,3 +1,8 @@
+v0.0.42, Mon 11, 2013 -- Sage
+- Allow getli by /in username, e.g. mekarpeles
+- added # connections to json
+- eliminated duplicates in 'similar' key
+
 v0.0.4, Wed 06, Feb 2013 -- Sage
 - FIX: parseli cli now works, updated importing
 - Moved /scripts/parseli.py to /scripts/parseli (now called @ cli by parseli)
