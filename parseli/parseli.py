@@ -67,6 +67,7 @@ def parseli(soup, raw=False):
             "viewers": [],
             "employment": [],
             "education": [],
+            "connections": '',
             })
 
     def meta(profile):
@@ -183,8 +184,6 @@ def parseli(soup, raw=False):
                 if any(career_lsts):
                     # reduce on list concat
                     careers = reduce(add, [lst[0] for lst in career_lsts])
-                    print '-'*10
-                    print careers
                     for career in careers:
                         title, institution = str(career)[4:-5]\
                             .replace("\n", "").split('<span class="at">at </span>')
@@ -263,6 +262,13 @@ def parseli(soup, raw=False):
                 profile["education"].append(edu)
         return profile
 
+    def conns(profile):
+        """User's network size"""
+        cs = soup.findAll('dd', {'class': 'overview-connections'})
+        if cs:
+            profile['connections'] = cs[0].findAll('strong')[0].text
+        return profile
+
     def similar(profile):
         """Returns a list of similar profile urls, if they exist"""
         try:
@@ -272,5 +278,6 @@ def parseli(soup, raw=False):
             pass
         return profile
 
-    profile = similar(header(overview(education(employment(meta(profile))))))
+    profile = similar(conns(header(overview(
+                    education(employment(meta(profile)))))))
     return profile if not raw else json.dumps(profile)
