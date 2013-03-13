@@ -278,6 +278,21 @@ def parseli(soup, raw=False):
             pass
         return profile
 
-    profile = similar(conns(header(overview(
-                    education(employment(meta(profile)))))))
+    def techtags(profile):
+        """Adds tech tags if they exist"""
+        tags = soup.findAll('ol', {'id': 'skills-list'})
+        if tags:
+            profile['skills'] = [li.text for li in tags[0].findAll('li')]
+        return profile
+
+    def interests(profile):
+        """Estimate interests based on groups / affiliations"""
+        groups = soup.findAll('dd', {'id': 'pubgroups'})
+        if groups:
+            interests = [i.text for i in groups[0].findAll('li')]
+            profile['interests'] = interests
+        return profile
+        
+    profile = similar(interests(techtags(conns(header(overview(
+                        education(employment(meta(profile)))))))))
     return profile if not raw else json.dumps(profile)
