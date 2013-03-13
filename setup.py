@@ -15,7 +15,7 @@ from distutils.core import setup
 
 setup(
     name='parseli',
-    version='0.0.42',
+    version='0.0.44',
     url='',
     author='mek',
     author_email='michael.karpeles@gmail.com',
