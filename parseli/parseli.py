@@ -15,7 +15,9 @@
 """
 
 import json
+from urllib import urlencode
 import urllib2
+import requests
 from operator import add
 from BeautifulSoup import BeautifulSoup
 from utils import Storage
@@ -296,3 +298,49 @@ def parseli(soup, raw=False):
     profile = similar(interests(techtags(conns(header(overview(
                         education(employment(meta(profile)))))))))
     return profile if not raw else json.dumps(profile)
+
+
+def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
+    """Returns a json dict whose keys are the 'types'.
+
+    params:
+    :param query: string to search for
+    :param types: 'mynetwork,company,group,sitefeature,skill'
+    """
+    def restructure(results):
+        """Removes the unecessary 'resultList' key and maps the type
+        directory to a list of results
+        """
+        for t in results:
+            results[t] = results[t]['resultList']
+        return results
+
+    def fill_missing_types(results):
+        """Fill in missing types (keys) which weren't returned by
+        linkedin
+        """
+        for t in types.split(','):
+            if t not in results:
+                results[t] = []
+        return results
+
+    url = "http://www.linkedin.com/ta/federator?query=%s&types=%s" % (query, types)
+    r = requests.get(url)
+    results = r.json()
+
+    return fill_missing_types(restructure(results))
+
+def name_search(html_ok=False, **kwargs):
+    """http://www.linkedin.com/pub/dir/?search=Search
+    :params first, last, company:"""
+    url = "http://www.linkedin.com/pub/dir/?search=Search&%s" % urlencode(kwargs)
+    r = requests.get(url)
+    if html_ok:
+        return r.content()
+    raise NotImplementedError("Name search incomplete, still need " \
+                                  "to parse html results")
+
+def company_search(company):
+    url = "http://www.linkedin.com/tacompany?query=%s" % company
+    r = requests.get(url)
+    return r.json()['resultList']
