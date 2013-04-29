@@ -1,3 +1,7 @@
+v0.0.45, Sun 28 April, 2013 -- Sage
+- added search capabilities
+- test cases are broken (test data relied on users who have updated their profiles)
+
 v0.0.44, Tue 12, 2013 -- Sage
 - Added interests
 - Added tech skill pills
