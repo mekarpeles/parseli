@@ -367,7 +367,6 @@ def people_search(first="", last="", limit=None):
                                'total': int(total.replace(',', ''))
                                }
         vcards = soup.findAll('li', {'class': 'vcard'})
-        print len(vcards)
         for vcard in vcards[:limit]:
             person = {}
             details = vcard.findAll('h2')[0].findAll('a')[0]
