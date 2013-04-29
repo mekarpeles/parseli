@@ -16,7 +16,7 @@ import os
 
 setup(
     name='parseli',
-    version='0.0.45',
+    version='0.0.46',
     url='',
     author='mek',
     author_email='michael.karpeles@gmail.com',
