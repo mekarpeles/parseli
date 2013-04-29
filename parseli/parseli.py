@@ -176,9 +176,11 @@ def parseli(soup, raw=False):
         overview_sec = soup.findAll('dl', {'id': 'overview'})
         if overview_sec:
             if not profile.employment:
-                career_selectors = [overview_sec[0].findAll('div', {'class': 'summary-current'}),
-                                    overview_sec[0].findAll('div', {'class': 'summary-past'}),
-                                    overview_sec[0].findAll('div', {'class': 'past'})]
+                career_selectors = [\
+                    overview_sec[0].findAll('div', {'class': 'summary-current'}),
+                    overview_sec[0].findAll('div', {'class': 'summary-past'}),
+                    overview_sec[0].findAll('div', {'class': 'past'})
+                    ]
                 # prune any selector which returns no results, i.e. [], are not lists
                 career_lsts = filter(lambda x: type(x) is list, career_selectors)
 
@@ -299,7 +301,6 @@ def parseli(soup, raw=False):
                         education(employment(meta(profile)))))))))
     return profile if not raw else json.dumps(profile)
 
-
 def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
     """Returns a json dict whose keys are the 'types'.
 
@@ -330,17 +331,88 @@ def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
 
     return fill_missing_types(restructure(results))
 
-def name_search(html_ok=False, **kwargs):
+def people_search(first="", last="", limit=None):
     """http://www.linkedin.com/pub/dir/?search=Search
-    :params first, last, company:"""
-    url = "http://www.linkedin.com/pub/dir/?search=Search&%s" % urlencode(kwargs)
-    r = requests.get(url)
-    if html_ok:
-        return r.content()
-    raise NotImplementedError("Name search incomplete, still need " \
-                                  "to parse html results")
+    :params first, last, company:
 
-def company_search(company):
-    url = "http://www.linkedin.com/tacompany?query=%s" % company
+    usage:
+    >>> from parseli import people_search
+    >>> people_search(first='mek', limit=3)
+    {'people': [{'location': u'&#xc5;rhus Area, Denmark',
+                'name': {'first': u'Mek', 'last': u'Falk'},
+                'title': u'Owner at Alive Music',
+                'url': u'http://dk.linkedin.com/pub/mek-falk/1b/8a2/4a9'},
+                {'location': u'Copenhagen Area, Denmark',
+                'name': {'first': u'Mek', 'last': u'Nielsen'},
+                'title': '',
+                'url': u'http://dk.linkedin.com/in/meknielsen'},
+                {'location': u'San Francisco Bay Area',
+                'name': {'first': u'Mek', 'last': u'Karpeles'},
+                'title': u'Founder and CEO at Hackerlist, Inc',
+                'url': u'http://www.linkedin.com/in/mekarpeles'}],
+      'summary': {'limit': 25, 'total': 169}
+     }
+    """
+    def parse_serp(html, limit):
+        """params:
+        :param html: html of the people results page
+        :parma limit: only return 'limit' people
+        """
+        serp = {'people': []}
+        soup = BeautifulSoup(html)
+        serpcnt = soup.findAll('ul', {'class': 'result-summary same-name-dir'})
+        if serpcnt:
+            pagetotal, of, total = serpcnt[0].text.split(" ")[:3]
+            serp['summary'] = {'limit': int(pagetotal),
+                               'total': int(total)
+                               }
+        vcards = soup.findAll('li', {'class': 'vcard'})
+        print len(vcards)
+        for vcard in vcards[:limit]:
+            person = {}
+            details = vcard.findAll('h2')[0].findAll('a')[0]
+            location = vcard.findAll('span', {'class': 'location'})
+            title = vcard.findAll('dd', {'class': 'current-content'})
+            names = (name.text for name in details.findAll('span'))
+            try:
+                person['name'] = dict(zip(('first', 'last'), names))
+            except:
+                person['name'] = {'nick': names[0]}
+            person['url'] = details['href']
+            person['location'] = location[0].text if location else ""
+            person['title'] = title[0].text if title else ""
+            serp['people'].append(person)            
+        return serp
+    url = "http://www.linkedin.com/pub/dir/" \
+        "?first=%s&last=%s&search=Search&searchType=fps" % (first, last)
+    r = requests.post(url)
+    html = r.content
+    return parse_serp(html, limit)
+
+def company_search(company, limit=None):
+    """Search for companies 
+
+    usage:
+    >>> from parseli import company_search
+    >>> company_search('google', limit=1)
+    [{u'displayName': u'LinkedIn',
+    u'headLine': u'LinkedIn',
+    u'id': u'1337',
+    u'imageUrl': u'http://media.licdn.com/mpr/mpr/shrink_40_40/p/3/000/248/137/3f632c3.png',
+    u'size': {'lower': 1001, 'upper': 5000},
+    u'subLine': u'Internet; 1001-5000 employees',
+    u'url': u'http://www.linkedin.com/company/1337'}]
+    """
+    url = "http://www.linkedin.com/ta/company?query=%s" % company
     r = requests.get(url)
-    return r.json()['resultList']
+    companies = r.json()['resultList'][:limit]
+    for company in companies:
+        if 'headLine' in company and '<strong>' in company['headLine']:
+            company['headLine'] = company['headLine'].replace("<strong>", "")\
+                .replace("</strong>", "")
+        if 'subLine' in company:
+            size, _ = company['subLine'].split(" ")[-2:]
+            size.replace('+', '')
+            size1, size2 = (size, size) if "-" not in size else size.split('-')
+            company[u'size'] = {'lower': int(size1), 'upper': int(size2)}
+    return companies
