@@ -15,13 +15,12 @@ from distutils.core import setup
 
 setup(
     name='parseli',
-    version='0.0.44',
+    version='0.0.45',
     url='',
     author='mek',
     author_email='michael.karpeles@gmail.com',
     packages=[
         'parseli',
-        'test'
         ],
     platforms='any',
     scripts=['scripts/parseli'],
