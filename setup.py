@@ -12,6 +12,7 @@
 """
 
 from distutils.core import setup
+import os
 
 setup(
     name='parseli',
@@ -26,8 +27,9 @@ setup(
     scripts=['scripts/parseli'],
     license='LICENSE',
     install_requires=[
-        'beautifulsoup',
+        'beautifulsoup >= 3.2.1',
+        'requests >= 1.1.0'
     ],
     description="Parseli cooks public LinkedIn profile pages into json.",
-    long_description=open('README.md').read(),
+    long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
 )
