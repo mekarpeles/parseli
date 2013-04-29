@@ -9,4 +9,4 @@ __author__ = [
 __license__ = "public domain"
 __contributors__ = "see AUTHORS"
 
-from parseli import getli, crawli, parseli
+from parseli import getli, crawli, parseli, company_search, people_search, custom_search
