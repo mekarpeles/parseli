@@ -412,7 +412,7 @@ def company_search(company, limit=None):
                 .replace("</strong>", "")
         if 'subLine' in company:
             size, _ = company['subLine'].split(" ")[-2:]
-            size.replace('+', '').replace(',', '')
+            size = size.replace('+', '').replace(',', '')
             size1, size2 = (size, size) if "-" not in size else size.split('-')
             company[u'size'] = {'lower': int(size1), 'upper': int(size2)}
     return companies
