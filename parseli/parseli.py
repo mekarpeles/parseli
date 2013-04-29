@@ -363,8 +363,8 @@ def people_search(first="", last="", limit=None):
         serpcnt = soup.findAll('ul', {'class': 'result-summary same-name-dir'})
         if serpcnt:
             pagetotal, of, total = serpcnt[0].text.split(" ")[:3]
-            serp['summary'] = {'limit': int(pagetotal),
-                               'total': int(total)
+            serp['summary'] = {'limit': int(pagetotal.replace(',', '')),
+                               'total': int(total.replace(',', ''))
                                }
         vcards = soup.findAll('li', {'class': 'vcard'})
         print len(vcards)
