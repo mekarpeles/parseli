@@ -230,6 +230,7 @@ def parseli(soup, raw=False):
                 title = career.findAll("span", {'class': 'title'})
                 institution = career.findAll("span", {'class': 'org summary'})
                 location = career.findAll("span", {'class': 'location'})
+                description = career.findAll("p", {'class': ' description past-position'})
                 dtstart = career.findAll('abbr', {'class': "dtstart"})
                 dtstamp = career.findAll('abbr', {'class': "dtstamp"})
                 dtend = career.findAll('abbr', {'class': "dtend"})
@@ -237,6 +238,7 @@ def parseli(soup, raw=False):
                        "institution": institution[0].text if institution else '',
                        "current": 1 if dtstamp else 0,
                        "location": location[0].text if location else '',
+                       "description": description[0].text if description else '',
                        "date": {
                         "start": dtstart[0]['title'] if dtstart else '',
                         "end": dtend[0]['title'] if dtend else ''
