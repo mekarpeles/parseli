@@ -70,6 +70,7 @@ def parseli(soup, raw=False):
             "employment": [],
             "education": [],
             "connections": '',
+            "summary":",
             })
 
     def meta(profile):
@@ -272,7 +273,15 @@ def parseli(soup, raw=False):
         if cs:
             profile['connections'] = cs[0].findAll('strong')[0].text
         return profile
-
+    
+    def summary(profile):
+        summary_sec = soup.findAll('div', {'id': 'profile-summary'})
+        if summary_sec:
+            summary_sec = summary_sec[0]
+               summary_content = summary_sec.findAll('p', {"class": "summary"})                
+               if summary_content:
+                   profile.summary = summary_content
+        
     def similar(profile):
         """Returns a list of similar profile urls, if they exist"""
         try:
