@@ -70,7 +70,7 @@ def parseli(soup, raw=False):
             "employment": [],
             "education": [],
             "connections": '',
-            "summary":",
+            "summary": '',
             })
 
     def meta(profile):
@@ -278,9 +278,10 @@ def parseli(soup, raw=False):
         summary_sec = soup.findAll('div', {'id': 'profile-summary'})
         if summary_sec:
             summary_sec = summary_sec[0]
-               summary_content = summary_sec.findAll('p', {"class": "summary"})                
-               if summary_content:
-                   profile.summary = summary_content
+            summary_content = summary_sec.findAll('p', {"class": " description summary"})           
+            if summary_content:
+                profile.summary = summary_content[0].text                
+        return profile
         
     def similar(profile):
         """Returns a list of similar profile urls, if they exist"""
@@ -306,8 +307,8 @@ def parseli(soup, raw=False):
             profile['interests'] = interests
         return profile
         
-    profile = similar(interests(techtags(conns(header(overview(
-                        education(employment(meta(profile)))))))))
+    profile = summary(similar(interests(techtags(conns(header(overview(
+                        education(employment(meta(profile))))))))))
     return profile if not raw else json.dumps(profile)
 
 def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
