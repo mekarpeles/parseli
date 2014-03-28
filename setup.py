@@ -3,12 +3,10 @@
 """
     parseli
     ~~~~~~~
-    Dependencies
 
     Setup
     `````
-    $ sudo pip install -e .
-    $ sudo rm -rf build
+    $ sudo pip install .
 """
 
 from distutils.core import setup
@@ -16,7 +14,7 @@ import os
 
 setup(
     name='parseli',
-    version='0.0.46',
+    version='0.0.48',
     url='',
     author='mek',
     author_email='michael.karpeles@gmail.com',
