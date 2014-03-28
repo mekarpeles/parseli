@@ -1,22 +1,52 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
+from functools import partial
 import argparse
 import os
 import json
 
 from parseli.parseli import getli
 
-parser = argparse.ArgumentParser(description="Parseli cooks a LinkedIn Profile into JSON")
-parser.add_argument('url', nargs='?', metavar='<profile url>',
-                    help="url of user's linkedin profile (e.g. http://linkedin.com/in/mekarpeles)")
-args = parser.parse_args()
-if not args.url:
-    raise ValueError('No input detected, please enter a valid url.')
-if '/' in args.url and \
-        'http://' not in args.url and 'https://' not in args.url:
-    args.url = 'http://%s' % args.url
-try:
-    print getli(args.url, raw=True)
-except Exception as e:
-    print "Something went wrong, please make sure the url you entered is valid, like: http://linkedin.com/in/mekarpeles. Traceback: %s" % e
+def argparser():
+    """Creates a cli command line parser"""
+    parser = argparse.ArgumentParser(
+        description="Parseli cooks a LinkedIn Profile into JSON"
+        )
+    parser.add_argument('url', nargs='?', metavar='<profile url>',
+                        help="url of user's linkedin profile " \
+                            "(e.g. http://linkedin.com/in/mekarpeles)")
+    parser.add_argument('-p', '--proxy', default=None,
+                        help="Of the form - https://192.168.1.1:8080")
+    parser.add_argument('-u', '--useragent', default=None,
+                        help="User-Agent string, such as: " \
+                            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " \
+                            "(KHTML, like Gecko) Chrome/28.0.1500.71 " \
+                            "Safari/537.36")
+    return parser
+
+
+if __name__ == "__main__":    
+    args = argparser().parse_args()
+
+    if not args.url:
+        raise ValueError('No input detected, please enter a valid url.')
+
+    if '/' in args.url and \
+            'http://' not in args.url and 'https://' not in args.url:
+        args.url = 'http://%s' % args.url
+
+    parseli = partial(getli, url=args.url, raw=True)
+    
+    if args.proxy:
+        proxies = dict([args.proxy.split("://")])
+        parseli = partial(parseli, proxies=proxies)
+
+    if args.useragent:
+        parseli = partial(parseli, user_agent=('User-agent', args.useragent))
+
+    try:
+        print parseli()
+    except Exception as e:
+        print "Something went wrong, please make sure the url you entered " \
+            "is valid, like: http://linkedin.com/in/mekarpeles. Traceback: %s" % e

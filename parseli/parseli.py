@@ -15,8 +15,6 @@
 """
 
 import json
-from urllib import urlencode
-import urllib2
 import requests
 from operator import add
 from BeautifulSoup import BeautifulSoup
@@ -27,7 +25,7 @@ EMPLOY_SEC_CLS = 'position  {} experience vevent vcard summary-{}'
 EDU_SEC_CLS = 'position {} education vevent vcard'
 PROFILE_URL = "http://linkedin.com/profile?id={}"
 
-def getli(url, raw=False):
+def getli(url, raw=False, user_agent=('User-agent', 'Mozilla 3.10'), proxies=None):
     """Get LinkedIn: json results for any linkedin url
     
     params:
@@ -38,19 +36,22 @@ def getli(url, raw=False):
     if '/' not in url:
         username = url
         url = 'http://linkedin.com/in/%s' % username
+    if 'https://' in url:
+        url = url.replace('https://', 'http://')
+    if 'http://' not in url:
+        url = 'http://%s' % url
 
-    soup = crawli(url)
+    soup = crawli(url, user_agent=user_agent, proxies=proxies)
     parsely = parseli(soup, raw=raw)
     return parsely
 
-def crawli(url, user_agent=('User-agent', 'Mozilla 3.10')):
+def crawli(url, user_agent=('User-agent', 'Mozilla 3.10'), proxies=None):
     """Crawl LinkedIn: Returns html soup for any linkedin url"""
     url = url.replace('https://', 'http://')
-    req = urllib2.Request(url)
-    req.add_header(*user_agent)
-    html = urllib2.urlopen(req).read()
+    r = requests.get(url, headers=dict([user_agent]), proxies=proxies)
+    html = r.content
     soup = BeautifulSoup(html)
-    return soup    
+    return soup
 
 def parseli(soup, raw=False):
     """Parse LinkedIn: Scrapes, scrubs, and returns a dictionary of
@@ -313,7 +314,8 @@ def parseli(soup, raw=False):
                         education(employment(meta(profile))))))))))
     return profile if not raw else json.dumps(profile)
 
-def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
+def custom_search(query, types="mynetwork,company,group,sitefeature,skill",
+                  user_agent=('User-agent', 'Mozilla 3.10'), proxies=None):
     """Returns a json dict whose keys are the 'types'.
 
     params:
@@ -338,12 +340,13 @@ def custom_search(query, types="mynetwork,company,group,sitefeature,skill"):
         return results
 
     url = "http://www.linkedin.com/ta/federator?query=%s&types=%s" % (query, types)
-    r = requests.get(url)
+    r = requests.get(url, headers=dict([user_agent]), proxies=proxies)
     results = r.json()
 
     return fill_missing_types(restructure(results))
 
-def people_search(first="", last="", limit=None):
+def people_search(first="", last="", limit=None,
+                  user_agent=('User-agent', 'Mozilla 3.10'), proxies=None):
     """http://www.linkedin.com/pub/dir/?search=Search
     :params first, last, company:
 
@@ -396,11 +399,12 @@ def people_search(first="", last="", limit=None):
         return serp
     url = "http://www.linkedin.com/pub/dir/" \
         "?first=%s&last=%s&search=Search&searchType=fps" % (first, last)
-    r = requests.post(url)
+    r = requests.post(url, headers=dict([user_agent]), proxies=proxies)
     html = r.content
     return parse_serp(html, limit)
 
-def company_search(company, limit=None):
+def company_search(company, limit=None, user_agent=('User-agent', 'Mozilla 3.10'),
+                   proxies=None):
     """Search for companies 
 
     usage:
@@ -415,7 +419,7 @@ def company_search(company, limit=None):
     u'url': u'http://www.linkedin.com/company/1337'}]
     """
     url = "http://www.linkedin.com/ta/company?query=%s" % company
-    r = requests.get(url)
+    r = requests.get(url, headers=dict([user_agent]), proxies=proxies)
     companies = r.json()['resultList'][:limit]
     for company in companies:
         if 'headLine' in company and '<strong>' in company['headLine']:

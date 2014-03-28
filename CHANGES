@@ -1,3 +1,7 @@
+v0.0.48, Fri 28 March, 2014 -- Sage
+- adds proxies support
+- fixes calling script with https error
+
 v0.0.46, Sun 28 April, 2013 -- Sage
 - fixed test cases
 - added travis continuous integration (.travis.yml)
