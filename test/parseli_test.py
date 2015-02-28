@@ -23,6 +23,6 @@ class ParseliSageRosemaryTime_Test(unittest.TestCase):
     def test_crawli(self):
         jsn = getli(EXAMPLE_URL)
         del jsn['url']
-        self.assertTrue(jsn['name']['family-name'] == 'Karpeles',
+        self.assertTrue(jsn['name']['full-name'] == 'Mek Karpeles',
                         "Tests data does not match live data from LinkedIn")
 

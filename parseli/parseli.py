@@ -72,6 +72,7 @@ def parseli(soup, raw=False):
             "education": [],
             "connections": '',
             "summary": '',
+            "skills": []
             })
 
     def meta(profile):
@@ -79,20 +80,24 @@ def parseli(soup, raw=False):
         jstxt = str(soup.findAll('script'))
 
         def get_id(x):
+            attempt_to_find_user_id = ''
             try:
                 start_id = x.index("newTrkInfo = '") + 14
                 end_id = x.index(',', start_id)
-                return x[start_id:end_id]
+                attempt_to_find_user_id = x[start_id:end_id]
             except:
                 try:
                     start_id = x.index("user_id: ")
                     end_id = x.index(',', start_id)
-                    return x[start_id:end_id]
+                    attempt_to_find_user_id = x[start_id:end_id]
                 except:
                     member_id = soup.findAll('div', {'class': 'masthead'})
                     if member_id:
-                        return member_id[0]['id']
-            return ''
+                        attempt_to_find_user_id = member_id[0]['id']
+
+            if 'member-' in attempt_to_find_user_id:
+                return attempt_to_find_user_id.split('member-')[1]
+            return attempt_to_find_user_id
 
         liid = get_id(jstxt)
 
@@ -105,6 +110,7 @@ def parseli(soup, raw=False):
         profile.url = get_url()
         return profile
 
+    # COMPLETED
     def header(profile):
         """Parses the profile-header section
 
@@ -115,18 +121,18 @@ def parseli(soup, raw=False):
         | |       |
         | +-------+
         """
-        header_sec = soup.findAll('div', {'class': 'profile-header'})
+        header_sec = soup.findAll('div', {'class': 'profile-card vcard'})
 
         if header_sec:
             header_sec = header_sec[0]
             
-            avatar = header_sec.findAll('div', {'id': 'profile-picture'})
+            avatar = header_sec.findAll('div', {'class': 'profile-picture'})
             if avatar:
                 profile.avatar = avatar[0].findAll('img')[0]['src']
-            demographic = soup.findAll('dl', {"class": 'demographic-info adr'})
+            demographic = soup.findAll('div', {"id": 'demographics'})
             name = header_sec.findAll('span', {"class": "full-name"})            
-            headline = header_sec.findAll("p", {"class": "headline-title title"})
-
+            headline = header_sec.findAll("div", {"id": "headline-container"})
+            
             # Generally headline is of the form: "Title at Institution"
             if headline:                
                 profile.headline = headline[0].text
@@ -137,14 +143,21 @@ def parseli(soup, raw=False):
                             profile["employment"].append({"institution": institution, "title": title})
                         except:
                             pass
-
+                    if ' @ ' in profile.headline:
+                        try:
+                            title, institution = profile.headline.split(' @ ')
+                            profile["employment"].append({"institution": institution, "title": title})
+                        except:
+                            pass
+            
             if name:
                 given_name = name[0].findAll('span', {'class': 'given-name'})
                 family_name = name[0].findAll('span', {'class': 'family-name'})
 
                 profile.name.update({
                         'given-name': given_name[0].text if given_name else '',
-                        'family-name': family_name[0].text if family_name else ''
+                        'family-name': family_name[0].text if family_name else '',
+                        'full-name': name[0].text
                         })
 
             # Fetch industry, location + area from header section
@@ -203,6 +216,22 @@ def parseli(soup, raw=False):
                         profile['education'].append({'summary': edu.text})
         return profile
 
+
+    def skillset(profile):
+        skills_sec = soup.findAll('div', {'id':'profile-skills'})
+
+        if skills_sec:
+            skills_sec = skills_sec[0]
+            skills = skills_sec.findAll('li')
+            
+            for skill in skills:
+                skill_name = skill.findAll('span', {'class':'endorse-item-name'})
+                if skill_name:
+                    profile['skills'].append(skill_name[0].text)
+
+        return profile
+
+    # COMPLETED
     def employment(profile):
         """Parses the "Experience" section
 
@@ -218,54 +247,61 @@ def parseli(soup, raw=False):
         institution
         dtstart - [dtstamp|dtend] | location         
         """
-        jobs = soup.findAll('div', {'id': 'profile-experience'})
+        jobs = soup.findAll('div', {'id': 'background-experience-container'})
 
         # If profile "Experience Section" exists
         if jobs:
             jobs = jobs[0]
-            careers = jobs.findAll('div', {'class': EMPLOY_SEC_CLS.format("first", "current")}) + \
-                jobs.findAll('div', {'class': EMPLOY_SEC_CLS.format('', 'current')}) + \
-                jobs.findAll('div', {'class': EMPLOY_SEC_CLS.format('', 'past')})
-
+            careers = jobs.findAll('div', {'class': 'editable-item section-item current-position'}) + \
+                jobs.findAll('div', {'class': 'editable-item section-item past-position'})
+            
             for career in careers:
-                title = career.findAll("span", {'class': 'title'})
-                institution = career.findAll("span", {'class': 'org summary'})
-                location = career.findAll("span", {'class': 'location'})
-                description = career.findAll("p", {'class': ' description past-position'})
-                dtstart = career.findAll('abbr', {'class': "dtstart"})
-                dtstamp = career.findAll('abbr', {'class': "dtstamp"})
-                dtend = career.findAll('abbr', {'class': "dtend"})
-                job = {"title": title[0].text if title else '',
-                       "institution": institution[0].text if institution else '',
-                       "current": 1 if dtstamp else 0,
+                title = career.h4.text
+
+                potential_institutions = career.findAll('h5')
+                institution = potential_institutions[len(potential_institutions) - 1]
+                location = career.findAll("span", {'class': 'locality'})
+                description = career.findAll("p", {'class': 'description summary-field-show-more'})
+                time_period = career.findAll('span', {'class':'experience-date-locale'})[0].findAll('time')
+                dtstart = time_period[0].text
+                dtend = False # giving it some default value for now...
+                
+                if len(time_period) > 1:
+                    dtend = time_period[1].text
+
+                job = {"title": title if title else '',
+                       "institution": institution.text if institution else '',
+                       "current": 1 if dtend and 'Present' in dtend else 0,
                        "location": location[0].text if location else '',
                        "description": description[0].text if description else '',
-                       "date": {
-                        "start": dtstart[0]['title'] if dtstart else '',
-                        "end": dtend[0]['title'] if dtend else ''
+                       "date": {                    
+                        "start": dtstart if dtstart else '',
+                        "end": dtend if dtend else ''
                         }
                        }
                 profile["employment"].append(job)
+
         return profile
 
+    # COMPLETED
     def education(profile):
         """Parses the "Education" section"""        
-        section_edu = soup.findAll('div', {'id': 'profile-education'})
+        section_edu = soup.findAll('div', {'id': 'background-education'})
+        
         if section_edu:
             section_edu = section_edu[0]
-            edus = section_edu.findAll("div", {"class": EDU_SEC_CLS.format(' first')}) + \
-                section_edu.findAll("div", {"class": EDU_SEC_CLS.format('')})  
+            edus = section_edu.findAll("div", {"class": 'editable-item section-item'})
+            
             for school in edus:
-                institution = school.findAll("h3")
+                institution = school.h4.text
                 degree = school.findAll('span', {'class': 'degree'})
                 major = school.findAll('span', {'class': 'major'})
-                dtstart = school.findAll('abbr', {'class': "dtstart"})
-                dtend = school.findAll('abbr', {'class': "dtend"})
-                edu = {"institution": institution[0].text if institution else '',
+                edu_dates = school.findAll('span', {'class':'education-date'})
+                
+                edu = {"institution": institution if institution else '',
                        "degree": degree[0].text if degree else '',
                        "major": major[0].text if major else '',
-                       "dtstart": dtstart[0]['title'] if dtstart else '',
-                       "dtend": dtend[0]['title'] if dtend else ''
+                       "dates": edu_dates[0].text if edu_dates else ''                       
                        }
                 profile["education"].append(edu)
         return profile
@@ -277,11 +313,14 @@ def parseli(soup, raw=False):
             profile['connections'] = cs[0].findAll('strong')[0].text
         return profile
     
+    # COMPLETED
     def summary(profile):
-        summary_sec = soup.findAll('div', {'id': 'profile-summary'})
+        summary_sec = soup.findAll('div', {'id': 'summary-item-view'})
+        
         if summary_sec:
             summary_sec = summary_sec[0]
-            summary_content = summary_sec.findAll('p', {"class": " description summary"})           
+            summary_content = summary_sec.findAll('p', {"class": "description"})
+            
             if summary_content:
                 profile.summary = summary_content[0].text                
         return profile
@@ -310,8 +349,8 @@ def parseli(soup, raw=False):
             profile['interests'] = interests
         return profile
         
-    profile = summary(similar(interests(techtags(conns(header(overview(
-                        education(employment(meta(profile))))))))))
+    profile = skillset(summary(similar(interests(techtags(conns(header(overview(
+                        education(employment(meta(profile)))))))))))
     return profile if not raw else json.dumps(profile)
 
 def custom_search(query, types="mynetwork,company,group,sitefeature,skill",
