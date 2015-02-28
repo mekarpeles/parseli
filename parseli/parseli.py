@@ -110,7 +110,6 @@ def parseli(soup, raw=False):
         profile.url = get_url()
         return profile
 
-    # COMPLETED
     def header(profile):
         """Parses the profile-header section
 
@@ -231,7 +230,6 @@ def parseli(soup, raw=False):
 
         return profile
 
-    # COMPLETED
     def employment(profile):
         """Parses the "Experience" section
 
@@ -283,7 +281,6 @@ def parseli(soup, raw=False):
 
         return profile
 
-    # COMPLETED
     def education(profile):
         """Parses the "Education" section"""        
         section_edu = soup.findAll('div', {'id': 'background-education'})
@@ -313,7 +310,6 @@ def parseli(soup, raw=False):
             profile['connections'] = cs[0].findAll('strong')[0].text
         return profile
     
-    # COMPLETED
     def summary(profile):
         summary_sec = soup.findAll('div', {'id': 'summary-item-view'})
         
