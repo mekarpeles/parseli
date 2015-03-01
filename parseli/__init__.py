@@ -2,7 +2,7 @@
 
 """parseli (save, rows o' json, and time)"""
 
-__version__ = "0.0.48"
+__version__ = "0.0.5"
 __author__ = [
     "Mek <michael.karpeles@gmail.com>"
 ]

@@ -1,3 +1,7 @@
+v.0.0.5, Sat 28, Feb 2015 -- Rosemary
+- summary field added  by zohar jackson <zoharj@gmail.com>
+- CSS selectors updated by Matthew Chan <mattkc7@gmail.com>
+
 v0.0.48, Fri 28 March, 2014 -- Sage
 - adds proxies support
 - fixes calling script with https error

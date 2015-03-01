@@ -39,8 +39,8 @@ if __name__ == "__main__":
     parseli = partial(getli, url=args.url, raw=True)
     
     if args.proxy:
-        proxies = dict([args.proxy.split("://")])
-        parseli = partial(parseli, proxies=proxies)
+        protocol = args.proxy.split("://")[0]
+        parseli = partial(parseli, proxies={protocol: args.proxy})
 
     if args.useragent:
         parseli = partial(parseli, user_agent=('User-agent', args.useragent))
