@@ -261,7 +261,7 @@ def parseli(soup, raw=False):
                 location = career.findAll("span", {'class': 'locality'})
                 description = career.findAll("p", {'class': 'description summary-field-show-more'})
                 time_period = career.findAll('span', {'class':'experience-date-locale'})[0].findAll('time')
-                dtstart = time_period[0].text
+                dtstart = time_period[0].text if time_period
                 dtend = False # giving it some default value for now...
                 
                 if len(time_period) > 1:
