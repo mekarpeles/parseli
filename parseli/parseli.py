@@ -261,8 +261,11 @@ def parseli(soup, raw=False):
                 location = career.findAll("span", {'class': 'locality'})
                 description = career.findAll("p", {'class': 'description summary-field-show-more'})
                 time_period = career.findAll('span', {'class':'experience-date-locale'})[0].findAll('time')
-                dtstart = time_period[0].text
-                dtend = False # giving it some default value for now...
+                dtstart = False
+                dtend = False
+
+                if time_period:
+                    dtstart = time_period[0].text                
                 
                 if len(time_period) > 1:
                     dtend = time_period[1].text
